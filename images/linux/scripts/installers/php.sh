@@ -35,6 +35,7 @@ for version in $php_versions; do
         php$version-gd \
         php$version-gmp \
         php$version-igbinary \
+        php$version-imagick \
         php$version-imap \
         php$version-interbase \
         php$version-intl \
@@ -74,6 +75,18 @@ for version in $php_versions; do
     if [[ $version != "8.0" ]]; then
         apt-fast install -y --no-install-recommends php$version-xmlrpc php$version-json
     fi
+
+    if [[ $version != "5.6" && $version != "7.0" ]]; then
+        apt-fast install -y --no-install-recommends php$version-pcov
+
+        # Disable PCOV, as Xdebug is enabled by default
+        # https://github.com/krakjoe/pcov#interoperability
+        phpdismod -v $version pcov
+    fi
+
+    if [[ $version = "7.0" || $version = "7.1" ]]; then
+        apt-fast install -y --no-install-recommends php$version-sodium
+    fi
 done
 
 apt-fast install -y --no-install-recommends php-pear
@@ -88,7 +101,7 @@ sudo mv composer.phar /usr/bin/composer
 php -r "unlink('composer-setup.php');"
 
 # Add composer bin folder to path
-echo 'export PATH=$PATH:$HOME/.config/composer/vendor/bin' | tee -a /etc/profile.d/env_vars.sh
+prependEtcEnvironmentPath '$HOME/.config/composer/vendor/bin'
 
 #Create composer folder for user to preserve folder permissions
 mkdir -p /etc/skel/.composer

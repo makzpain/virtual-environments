@@ -110,15 +110,15 @@ Describe "Cmake" {
 }
 
 Describe "erlang" {
-    $testCases = @("erl", "erlc", "rebar3") | ForEach-Object { @{ErlangCommand = $_} }
+    $testCases = @("erl -version", "erlc -v", "rebar3 -v") | ForEach-Object { @{ErlangCommand = $_} }
 
     It "erlang <ErlangCommand>" -TestCases $testCases {
         param (
             [string] $ErlangCommand
         )
 
-        "$ErlangCommand -v" | Should -ReturnZeroExitCode
-    }   
+        "$ErlangCommand" | Should -ReturnZeroExitCode
+    }
 }
 
 Describe "gcc" {
@@ -148,6 +148,10 @@ Describe "gfortran" {
 Describe "Mono" {
     It "mono" {
         "mono --version" | Should -ReturnZeroExitCode
+    }
+
+    It "msbuild" {
+        "msbuild -version" | Should -ReturnZeroExitCode
     }
 
     It "nuget" {
@@ -224,6 +228,14 @@ Describe "HHVM" {
 Describe "Homebrew" {
     It "homebrew" {
         "brew --version" | Should -ReturnZeroExitCode
+    }
+
+    Context "Packages" {
+        $testCases = (Get-ToolsetContent).brew | ForEach-Object { @{ ToolName = $_.name } }
+
+        It "<ToolName>" -TestCases $testCases {
+           "$ToolName --version" | Should -Not -BeNullOrEmpty
+        }
     }
 }
 
